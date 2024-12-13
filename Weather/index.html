@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ứng dụng Thời Tiết</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-blue-50 min-h-screen flex flex-col items-center p-4">
+    <!-- Header -->
+    <header
+      class="w-full text-center py-6 bg-blue-600 text-white shadow-md rounded"
+    >
+      <h1 class="text-4xl font-bold">🌤 Ứng Dụng Thời Tiết</h1>
+      <p class="text-lg mt-2">Cập nhật thời tiết nhanh chóng!</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow w-full max-w-md mt-6">
+      <!-- Form for city input -->
+      <form id="weather-form" class="flex items-center gap-4 mb-6">
+        <input
+          type="text"
+          id="city-input"
+          placeholder="Nhập tên thành phố..."
+          class="w-full p-3 border rounded shadow focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-3 rounded hover:bg-blue-600 transition-all"
+        >
+          Tìm Kiếm
+        </button>
+        <button
+          id="close-button"
+          type="button"
+          class="bg-red-500 text-white px-4 py-3 rounded hover:bg-red-600 transition-all"
+        >
+          Đóng Trang
+        </button>
+      </form>
+
+      <!-- Weather Display -->
+      <div
+        id="weather-container"
+        class="hidden p-6 bg-white rounded shadow text-center flex flex-col gap-4"
+      >
+        <h2 id="location" class="text-2xl font-bold text-blue-600"></h2>
+        <p id="temperature" class="text-4xl font-bold"></p>
+        <p id="condition" class="text-lg text-gray-600"></p>
+        <p id="humidity" class="text-sm text-gray-500"></p>
+      </div>
+
+      <!-- Error Message -->
+      <div
+        id="error-container"
+        class="hidden mt-6 p-4 bg-red-100 border border-red-400 text-red-600 rounded"
+      >
+        Không tìm thấy thông tin thời tiết. Vui lòng thử lại.
+      </div>
+
+      <!-- Loading Message -->
+      <div
+        id="loading-container"
+        class="hidden mt-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-600 rounded"
+      >
+        Đang tải dữ liệu thời tiết...
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="mt-6 py-4 text-center bg-blue-600 text-white rounded shadow w-full"
+    >
+      <p class="text-sm">Được phát triển bởi [Thy Nguyễn] &copy; 2024</p>
+    </footer>
+
+    <script>
+      const API_KEY = "d7bac82c476a4aff996151609241212"; // Thay bằng API key từ WeatherAPI
+      const API_URL = "https://api.weatherapi.com/v1/current.json";
+
+      const weatherForm = document.getElementById("weather-form");
+      const cityInput = document.getElementById("city-input");
+      const weatherContainer = document.getElementById("weather-container");
+      const errorContainer = document.getElementById("error-container");
+      const loadingContainer = document.getElementById("loading-container");
+      const closeButton = document.getElementById("close-button");
+
+      const locationElement = document.getElementById("location");
+      const temperatureElement = document.getElementById("temperature");
+      const conditionElement = document.getElementById("condition");
+      const humidityElement = document.getElementById("humidity");
+
+      // Fetch weather data from API
+      async function fetchWeather(city) {
+        try {
+          const response = await fetch(`${API_URL}?key=${API_KEY}&q=${city}`);
+          if (!response.ok) throw new Error("City not found");
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      }
+
+      // Display weather information
+      function displayWeather(data) {
+        weatherContainer.classList.remove("hidden");
+        errorContainer.classList.add("hidden");
+        loadingContainer.classList.add("hidden");
+
+        locationElement.textContent = `${data.location.name}, ${data.location.country}`;
+        temperatureElement.textContent = `${data.current.temp_c}°C`;
+        conditionElement.textContent = data.current.condition.text;
+        humidityElement.textContent = `Độ ẩm: ${data.current.humidity}%`;
+      }
+
+      // Handle form submission
+      weatherForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const city = cityInput.value.trim();
+        if (!city) return alert("Vui lòng nhập tên thành phố!");
+
+        loadingContainer.classList.remove("hidden");
+        weatherContainer.classList.add("hidden");
+        errorContainer.classList.add("hidden");
+
+        try {
+          const weatherData = await fetchWeather(city);
+          displayWeather(weatherData);
+        } catch {
+          weatherContainer.classList.add("hidden");
+          errorContainer.classList.remove("hidden");
+          loadingContainer.classList.add("hidden");
+        }
+      });
+
+      // Handle close button click
+      closeButton.addEventListener("click", () => {
+        window.close();
+      });
+    </script>
+  </body>
+</html>
