@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ứng dụng Thời Tiết</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.google.com/maps/@10.8204669,106.6864119,15z?entry=ttu&g_ep=EgoyMDI0MTIxMS4wIKXMDSoASAFQAw%3D%3D"></script>
   </head>
   <body class="bg-blue-50 min-h-screen flex flex-col items-center p-4">
     <!-- Header -->
@@ -16,15 +17,21 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow w-full max-w-md mt-6">
+    <main class="flex-grow w-full mt-6">
       <!-- Form for city input -->
-      <form id="weather-form" class="flex items-center gap-4 mb-6">
+      <form id="weather-form" class="relative flex items-center gap-4 mb-6">
         <input
-          type="text"
           id="city-input"
+          type="text"
+          class="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring focus:border-blue-400"
           placeholder="Nhập tên thành phố..."
-          class="w-full p-3 border rounded shadow focus:ring-2 focus:ring-blue-500"
+          autocomplete="off"
         />
+        <div
+          id="autocomplete-results"
+          class="absolute bg-white border border-gray-300 rounded shadow-lg w-full hidden"
+        ></div>
+
         <button
           type="submit"
           class="bg-blue-500 text-white px-4 py-3 rounded hover:bg-blue-600 transition-all"
@@ -43,12 +50,32 @@
       <!-- Weather Display -->
       <div
         id="weather-container"
-        class="hidden p-6 bg-white rounded shadow text-center flex flex-col gap-4"
+        class="hidden w-full p-6 bg-white rounded shadow text-center flex flex-col gap-4 items-center justify-center overflow-auto"
       >
         <h2 id="location" class="text-2xl font-bold text-blue-600"></h2>
         <p id="temperature" class="text-4xl font-bold"></p>
         <p id="condition" class="text-lg text-gray-600"></p>
         <p id="humidity" class="text-sm text-gray-500"></p>
+      </div>
+
+      <!-- Forecast Display -->
+      <div
+        id="forecast-container"
+        class="hidden p-6 bg-white rounded shadow text-center flex flex-col gap-4 mt-4"
+      >
+        <h3 class="text-xl font-bold text-blue-600">Dự Báo 7 Ngày Tiếp Theo</h3>
+        <div
+          id="forecast-days"
+          class="flex justify-between gap-4 overflow-x-auto w-full"
+        >
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 1</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 2</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 3</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 4</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 5</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 6</div>
+          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 7</div>
+        </div>
       </div>
 
       <!-- Error Message -->
@@ -75,72 +102,6 @@
       <p class="text-sm">Được phát triển bởi [Thy Nguyễn] &copy; 2024</p>
     </footer>
 
-    <script>
-      const API_KEY = "d7bac82c476a4aff996151609241212"; // Thay bằng API key từ WeatherAPI
-      const API_URL = "https://api.weatherapi.com/v1/current.json";
-
-      const weatherForm = document.getElementById("weather-form");
-      const cityInput = document.getElementById("city-input");
-      const weatherContainer = document.getElementById("weather-container");
-      const errorContainer = document.getElementById("error-container");
-      const loadingContainer = document.getElementById("loading-container");
-      const closeButton = document.getElementById("close-button");
-
-      const locationElement = document.getElementById("location");
-      const temperatureElement = document.getElementById("temperature");
-      const conditionElement = document.getElementById("condition");
-      const humidityElement = document.getElementById("humidity");
-
-      // Fetch weather data from API
-      async function fetchWeather(city) {
-        try {
-          const response = await fetch(`${API_URL}?key=${API_KEY}&q=${city}`);
-          if (!response.ok) throw new Error("City not found");
-          const data = await response.json();
-          return data;
-        } catch (error) {
-          console.error(error);
-          throw error;
-        }
-      }
-
-      // Display weather information
-      function displayWeather(data) {
-        weatherContainer.classList.remove("hidden");
-        errorContainer.classList.add("hidden");
-        loadingContainer.classList.add("hidden");
-
-        locationElement.textContent = `${data.location.name}, ${data.location.country}`;
-        temperatureElement.textContent = `${data.current.temp_c}°C`;
-        conditionElement.textContent = data.current.condition.text;
-        humidityElement.textContent = `Độ ẩm: ${data.current.humidity}%`;
-      }
-
-      // Handle form submission
-      weatherForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const city = cityInput.value.trim();
-        if (!city) return alert("Vui lòng nhập tên thành phố!");
-
-        loadingContainer.classList.remove("hidden");
-        weatherContainer.classList.add("hidden");
-        errorContainer.classList.add("hidden");
-
-        try {
-          const weatherData = await fetchWeather(city);
-          displayWeather(weatherData);
-        } catch {
-          weatherContainer.classList.add("hidden");
-          errorContainer.classList.remove("hidden");
-          loadingContainer.classList.add("hidden");
-        }
-      });
-
-      // Handle close button click
-      closeButton.addEventListener("click", () => {
-        window.close();
-      });
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>
