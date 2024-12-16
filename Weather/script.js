@@ -1,9 +1,16 @@
+const provinces = window.vietnamProvinces
+  .getProvinces()
+  .map((province) =>
+    province.name.replace("Tỉnh", "").replace("Thành phố", "").trim()
+  );
+console.log("window.vietnamProvinces:", window.vietnamProvinces);
+
 const API_KEY = "d7bac82c476a4aff996151609241212"; // Thay bằng API key từ WeatherAPI
 const CURRENT_API_URL = "https://api.weatherapi.com/v1/current.json";
 const FORECAST_API_URL = "https://api.weatherapi.com/v1/forecast.json";
-
 const weatherForm = document.getElementById("weather-form");
 const cityInput = document.getElementById("city-input");
+const submitButton = document.querySelector("#submit-btn");
 const autocompleteResults = document.getElementById("autocomplete-results");
 const weatherContainer = document.getElementById("weather-container");
 const forecastContainer = document.getElementById("forecast-container");
@@ -46,6 +53,29 @@ function translateCondition(condition) {
   return conditions[condition] || condition;
 }
 
+function removeVnSign(str) {
+  str = str.toLowerCase();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  return str;
+}
+
+function partialSearch(query, dataset) {
+  // Normalize the query
+  const normalizedQuery = removeVnSign(query.trim().toLowerCase());
+
+  // Search the dataset
+  return dataset.filter((item) => {
+    const normalizedItem = removeVnSign(item.toLowerCase());
+    return normalizedItem.includes(normalizedQuery);
+  });
+}
+
 // Fetch weather data
 async function fetchWeather(city) {
   try {
@@ -65,6 +95,62 @@ async function fetchWeather(city) {
     throw error;
   }
 }
+
+const getWeatherData = async () => {
+  const city = cityInput.value.trim();
+  if (!city) return alert("Vui lòng nhập tên thành phố!");
+
+  loadingContainer.classList.remove("hidden");
+  weatherContainer.classList.add("hidden");
+  forecastContainer.classList.add("hidden");
+  errorContainer.classList.add("hidden");
+
+  try {
+    const weatherData = await fetchWeather(city);
+    displayWeather(weatherData);
+    displayForecast(weatherData);
+  } catch (error) {
+    errorContainer.textContent =
+      error.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
+    errorContainer.classList.remove("hidden");
+    loadingContainer.classList.add("hidden");
+  }
+};
+
+const handleSelectSearchValue = (el) => {
+  const searchValue = removeVnSign(el.innerHTML?.trim());
+
+  if (!cityInput || !searchValue) return;
+
+  // set search input and remove autocomplete data to see weather data
+  cityInput.value = searchValue;
+  autocompleteResults.innerHTML = "";
+  getWeatherData();
+};
+
+const searchProvinces = (e) => {
+  const searchValue = e.target.value;
+
+  // validate is existing autocompleteResults element
+  if (!autocompleteResults) return;
+
+  let searchResult = "";
+
+  if (!searchValue) {
+    autocompleteResults.innerHTML = searchResult;
+    return;
+  }
+
+  const searchData = partialSearch(searchValue, provinces);
+
+  searchData.forEach((province) => {
+    searchResult += `<div onclick="handleSelectSearchValue(this)" class="px-3 py-2 cursor-pointer hover:bg-zinc-100 transition-all hover:font-medium">
+      ${province}
+    </div>`;
+  });
+
+  autocompleteResults.innerHTML = searchResult;
+};
 
 // Display current weather information
 function displayWeather(data) {
@@ -117,43 +203,18 @@ function displayForecast(data) {
   });
 }
 
-// Google Places API Autocomplete
-function initAutocomplete() {
-  const autocomplete = new google.maps.places.Autocomplete(cityInput, {
-    types: ["(cities)"],
-  });
-
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
-    if (place.geometry && place.formatted_address) {
-      cityInput.value = place.formatted_address;
-      autocompleteResults.classList.add("hidden");
-    }
-  });
-}
+const clearAutocompleteResult = () => {
+  // wait for click on element then clear data
+  setTimeout(() => {
+    autocompleteResults.innerHTML = "";
+  }, 100);
+};
 
 // Handle form submission
 weatherForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  const city = cityInput.value.trim();
-  if (!city) return alert("Vui lòng nhập tên thành phố!");
-
-  loadingContainer.classList.remove("hidden");
-  weatherContainer.classList.add("hidden");
-  forecastContainer.classList.add("hidden");
-  errorContainer.classList.add("hidden");
-
-  try {
-    const weatherData = await fetchWeather(city);
-    displayWeather(weatherData);
-    displayForecast(weatherData);
-  } catch (error) {
-    errorContainer.textContent =
-      error.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
-    errorContainer.classList.remove("hidden");
-    loadingContainer.classList.add("hidden");
-  }
+  autocompleteResults.innerHTML = "";
+  await getWeatherData();
 });
 
 // Handle close button click
@@ -161,10 +222,12 @@ closeButton.addEventListener("click", () => {
   window.location.reload();
 });
 
-// Initialize Autocomplete on page load
-window.onload = initAutocomplete;
 // Handle close button click
 closeButton.addEventListener("click", () => {
   // Đóng trang
   window.close();
 });
+
+cityInput.addEventListener("input", searchProvinces);
+cityInput.addEventListener("focus", searchProvinces);
+cityInput.addEventListener("blur", clearAutocompleteResult);

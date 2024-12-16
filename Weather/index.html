@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ứng dụng Thời Tiết</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.google.com/maps/@10.8204669,106.6864119,15z?entry=ttu&g_ep=EgoyMDI0MTIxMS4wIKXMDSoASAFQAw%3D%3D"></script>
+    <script src="
+https://cdn.jsdelivr.net/npm/vietnam-provinces@0.0.4/dist/main.umd.min.js
+"></script>
   </head>
   <body class="bg-blue-50 min-h-screen flex flex-col items-center p-4">
     <!-- Header -->
@@ -20,17 +22,19 @@
     <main class="flex-grow w-full mt-6">
       <!-- Form for city input -->
       <form id="weather-form" class="relative flex items-center gap-4 mb-6">
-        <input
-          id="city-input"
-          type="text"
-          class="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring focus:border-blue-400"
-          placeholder="Nhập tên thành phố..."
-          autocomplete="off"
-        />
-        <div
-          id="autocomplete-results"
-          class="absolute bg-white border border-gray-300 rounded shadow-lg w-full hidden"
-        ></div>
+        <div class="flex-1 relative">
+          <input
+            id="city-input"
+            type="text"
+            class="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring focus:border-blue-400"
+            placeholder="Nhập tên thành phố..."
+            autocomplete="off"
+          />
+          <div
+            id="autocomplete-results"
+            class="absolute top-full left-0 right-0 max-h-[50vh] bg-white rounded shadow-lg divide-y-[1px] transition-all overflow-auto"
+          ></div>
+        </div>
 
         <button
           type="submit"
@@ -67,15 +71,7 @@
         <div
           id="forecast-days"
           class="flex justify-between gap-4 overflow-x-auto w-full"
-        >
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 1</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 2</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 3</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 4</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 5</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 6</div>
-          <div class="bg-blue-500 text-white p-4 rounded w-1/7">Ngày 7</div>
-        </div>
+        ></div>
       </div>
 
       <!-- Error Message -->
